@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strict": true,
+    "strictPropertyInitialization": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "sourceMap": true,
+    // Deliberately NOT incremental: nest-cli's `deleteOutDir` wipes dist/ while a
+    // stale .tsbuildinfo still claims those outputs are current, so tsc skips
+    // re-emitting them and the build silently loses files.
+    "noFallthroughCasesInSwitch": true
+  }
+}

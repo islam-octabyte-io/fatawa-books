@@ -1,0 +1,31 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+dist/
+build/
+*.tsbuildinfo
+
+# env
+.env
+.env.*
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# editor / OS
+.DS_Store
+.idea/
+*.swp
+
+# test / coverage
+coverage/
+
+# Local SQLite source corpus (~70 MB across 23 files) — ingest input, not source.
+# Git would keep every future revision of these binaries forever. If they ever need
+# versioning, use Git LFS or external object storage instead of committing them here.
+data-collection/

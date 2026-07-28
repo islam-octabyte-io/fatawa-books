@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./src"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "drizzle",
+    "drizzle.config.ts",
+    "test",
+    "**/*.spec.ts",
+    "**/*.e2e-spec.ts"
+  ]
+}
