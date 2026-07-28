@@ -8,6 +8,13 @@
       "when": 1785260360706,
       "tag": "0000_special_revanche",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1785267470177,
+      "tag": "0001_third_prowler",
+      "breakpoints": true
     }
   ]
 }

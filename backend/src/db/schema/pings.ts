@@ -1,9 +1,13 @@
 import { pgTable, serial, text, timestamp } from 'drizzle-orm/pg-core';
 
 /**
- * Throwaway table proving the migrate → query → validate → serialize path.
- * The real fatwa domain schema (authors / books / volumes / pages / toc) lands
- * in a follow-up task alongside the SQLite ingest.
+ * Throwaway table proving the migrate → query → validate → serialize path,
+ * exercised by `HealthController`. The real domain schema (`books`, `pages`,
+ * `toc_entries`) now lives alongside it in this directory, so this table and
+ * the `/pings` endpoints can be deleted whenever the smoke test is no longer
+ * wanted.
+ *
+ * Not a UCI entity: it holds no content, so it keeps its serial id.
  *
  * Column names are spelled out explicitly so a `casing` mismatch between the
  * runtime `drizzle()` call and `drizzle.config.ts` cannot silently diverge.
