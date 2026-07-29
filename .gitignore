@@ -31,7 +31,9 @@ pnpm-debug.log*
 # test / coverage
 coverage/
 
-# Local SQLite source corpus (~70 MB across 23 files) — ingest input, not source.
-# Git would keep every future revision of these binaries forever. If they ever need
-# versioning, use Git LFS or external object storage instead of committing them here.
-data-collection/
+# The SQLite source corpus in data-collection/ is tracked, via Git LFS — see
+# .gitattributes. Ignore only the sidecar files SQLite writes next to a database
+# it has open, which are transient and must never be committed.
+data-collection/*.db-wal
+data-collection/*.db-shm
+data-collection/*.db-journal

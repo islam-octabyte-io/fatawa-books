@@ -1,0 +1,6 @@
+# The source fatawa corpus (~73 MB across 23 SQLite files) is stored in Git LFS,
+# not as plain blobs: it is re-generated wholesale upstream, so committing it
+# normally would leave a full copy of every revision in history forever.
+# Requires `git lfs install` once per clone; `git clone` without LFS yields
+# pointer files and `pnpm backend seed` will fail on them.
+data-collection/*.db filter=lfs diff=lfs merge=lfs -text
