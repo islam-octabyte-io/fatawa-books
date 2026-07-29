@@ -17,10 +17,12 @@ export default async function CataloguePage() {
   const { items, total } = await listBooks({ limit: 100 });
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-12 sm:px-8 sm:py-16">
+    <main className="mx-auto max-w-6xl px-6 py-10 sm:px-8 sm:py-14">
       <header className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+        {/* Not "فتاویٰ کتب" again — that is the wordmark in the site header, and
+            repeating it here as the page heading reads as a rendering bug. */}
         <h1 className="font-heading leading-nastaliq text-3xl sm:text-4xl">
-          فتاویٰ کتب
+          کتب کا مجموعہ
         </h1>
         {/* The count is the honest headline for a closed, frozen corpus: it is
             not a metric that will trend, it is the size of the shelf. */}

@@ -11,6 +11,8 @@
     --font-heading: var(--font-nastaliq);
     --font-nastaliq: var(--font-nastaliq);
     --font-sans: var(--font-sans);
+    /* Arabic quoted inside Urdu prose — see the note in app/layout.tsx. */
+    --font-arabic: var(--font-arabic);
     /* Nastaliq descenders drop well below the baseline, so it needs materially
        more leading than a Latin face. 1.75 is the measured floor at which
        stacked lines stop colliding; the doubled leading it replaced cleared the
@@ -155,4 +157,175 @@
   html {
     @apply font-sans;
     }
+}
+
+/*
+ * Page content — the one place in this app that is not styled with utilities.
+ *
+ * `PageDetail.html` is markup we do not author: an HTML fragment emitted by the
+ * offline ingest, so there is no JSX to hang classes on and these rules are the
+ * only way to reach it. The class vocabulary is closed and enumerated in
+ * `backend/src/db/seed/html.ts`, which throws on any token outside its maps, so
+ * the selectors below cannot silently fall out of date. Everything is scoped
+ * under `.page-html` so none of it leaks into the interface.
+ *
+ * Structure, measured across all 23 source files: the exporter emits one
+ * top-level span per line — 150,279 of them — and nests spans only for inline
+ * formatting changes mid-line (75,892, and not one of them carries an alignment
+ * token). No page anywhere has a surplus *opening* tag; all 1,264 imbalances are
+ * surplus closing tags, which browsers discard. So the rendered tree always
+ * matches the source nesting, and `> span` is exactly the set of lines.
+ */
+@layer components {
+  .page-html {
+    /* One knob scales the whole page, so the size tokens below stay relative to
+       each other. Nastaliq needs more optical size than a Latin face to stay
+       legible, hence a base above the usual 1rem. */
+    --page-base: clamp(1.05rem, 0.98rem + 0.35vw, 1.2rem);
+    font-size: var(--page-base);
+    text-wrap: pretty;
+    /* Citations run long with few break opportunities — `(صحيح البخاري‘ التيمم‘
+       باب : (1)‘ ح:335` has no space a narrow column can use. The corpus stays
+       inside a 320px viewport as it stands; this keeps a longer unbroken run from
+       setting its own minimum width and widening the page. */
+    overflow-wrap: break-word;
+    }
+
+  /* Each top-level span is a line of the printed page. It must be a block for
+     two reasons: the source separates them with newlines, which HTML would
+     collapse into spaces, and `text-align` — carried by 109,068 of them — has
+     no effect on an inline box. */
+  .page-html > span {
+    display: block;
+    margin-block-end: 0.6em;
+    }
+
+  /* The exporter uses an empty span as a blank line. As an empty block it would
+     have no height at all, so it is given just enough to read as the pause the
+     typesetter intended. */
+  .page-html > span:empty {
+    min-block-size: 0.75lh;
+    margin-block-end: 0;
+    }
+
+  .page-html > span:last-child {
+    margin-block-end: 0;
+    }
+
+  /* --- Language. `lu` is Urdu; `u` (below) is underline. Unrelated tokens. --- */
+
+  /* 171,574 spans. Nastaliq's descenders drop far below the baseline, so the
+     leading is not decorative — lines collide without it. */
+  .page-html .lu {
+    font-family: var(--font-nastaliq), serif;
+    line-height: var(--leading-nastaliq);
+    }
+
+  /* 38,156 spans: Qur'an and hadith quoted inside the Urdu. A naskh face is how
+     they are printed, and the change of form does the work a blockquote does in
+     a Latin document — it marks the quotation without adding chrome. */
+  .page-html .la {
+    font-family: var(--font-arabic), serif;
+    line-height: 1.9;
+    }
+
+  /* 4,449 spans, isolated words like `Nationality`. `unicode-bidi: isolate`
+     stops a Latin run from dragging neighbouring punctuation across the RTL
+     line — `direction` alone does not. */
+  .page-html .le {
+    font-family: var(--font-sans);
+    direction: ltr;
+    unicode-bidi: isolate;
+    }
+
+  /* 241 spans where the exporter recorded no language. Inherits the UI face. */
+  .page-html .lx {
+    line-height: 1.8;
+    }
+
+  /* --- Emphasis toggles --- */
+
+  .page-html .b {
+    font-weight: 600;
+    }
+
+  /* Neither Nastaliq nor naskh ships a true italic, so the browser would
+     synthesise a slant that fights the calligraphic angle. Colour-shifting the
+     ink is the closest honest equivalent. */
+  .page-html .i {
+    font-style: normal;
+    color: var(--primary);
+    }
+
+  /* Offset clears the descenders, which is why this is not `text-decoration`
+     shorthand. */
+  .page-html .u {
+    text-decoration: underline;
+    text-decoration-thickness: from-font;
+    text-underline-offset: 0.25em;
+    }
+
+  .page-html .hl {
+    background-color: color-mix(in oklch, var(--accent) 70%, transparent);
+    border-radius: 0.15em;
+    padding-inline: 0.1em;
+    }
+
+  /* --- Footnote markers --- */
+
+  /* The `[n]` reference in the body. Tinted and raised so it reads as a pointer
+     rather than as text, and so it visually matches the markers in the footnote
+     list rendered below the page. */
+  .page-html .fn {
+    color: var(--primary);
+    font-family: var(--font-sans);
+    font-size: 0.7em;
+    vertical-align: super;
+    line-height: 1;
+    font-feature-settings: 'tnum';
+    }
+
+  /* --- Alignment --- */
+
+  .page-html .tc {
+    text-align: center;
+    }
+
+  .page-html .tj {
+    text-align: justify;
+    text-justify: inter-word;
+    }
+
+  /* `ta0` and `ta3` are left and right in some order, and the source evidence
+     does not settle which: 8,419 spans, mean text length 1, almost all empty.
+     The ingest deliberately kept the ambiguous names rather than baking a coin
+     flip into the data, so both resolve to the reading direction here. If the
+     answer is ever established, it is a one-line change and no data migration.
+     See the note in `backend/src/db/seed/html.ts`. */
+  .page-html .ta0,
+  .page-html .ta3 {
+    text-align: start;
+    }
+
+  /* --- Size, in source points, compressed --- */
+
+  /* Points from a print exporter are not screen sizes. Body text is `s14`
+     (100,011 spans), `s15` (51,888) and `s16` (41,501), so those three have to
+     land in a comfortable reading range; the rare large tokens — `s22` (2,638),
+     `s24` (2,115), `s26` (35) — are headings and would become billboards at
+     literal scale. The ratios below hold the relationships while flattening the
+     extremes, and everything moves together with `--page-base`. */
+  .page-html .s12 { font-size: calc(var(--page-base) * 0.9); }
+  .page-html .s13 { font-size: calc(var(--page-base) * 0.95); }
+  .page-html .s14 { font-size: var(--page-base); }
+  .page-html .s15 { font-size: calc(var(--page-base) * 1.05); }
+  .page-html .s16 { font-size: calc(var(--page-base) * 1.1); }
+  .page-html .s17 { font-size: calc(var(--page-base) * 1.15); }
+  .page-html .s18 { font-size: calc(var(--page-base) * 1.22); }
+  .page-html .s19 { font-size: calc(var(--page-base) * 1.28); }
+  .page-html .s20 { font-size: calc(var(--page-base) * 1.34); }
+  .page-html .s21 { font-size: calc(var(--page-base) * 1.4); }
+  .page-html .s22 { font-size: calc(var(--page-base) * 1.46); }
+  .page-html .s24 { font-size: calc(var(--page-base) * 1.58); }
+  .page-html .s26 { font-size: calc(var(--page-base) * 1.7); }
 }

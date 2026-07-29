@@ -117,6 +117,15 @@ async function apiFetch<T>(path: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+/** Builds the `?limit=&offset=` suffix, omitting either half when unset. */
+function paginationQuery(params: { limit?: number; offset?: number }): string {
+  const query = new URLSearchParams();
+  if (params.limit !== undefined) query.set('limit', String(params.limit));
+  if (params.offset !== undefined) query.set('offset', String(params.offset));
+
+  return query.size > 0 ? `?${query}` : '';
+}
+
 /**
  * The catalogue. `limit` is capped at 100 by the backend; the whole corpus is 23
  * books, so one page covers it today.
@@ -124,12 +133,7 @@ async function apiFetch<T>(path: string): Promise<T> {
 export function listBooks(
   params: { limit?: number; offset?: number } = {},
 ): Promise<PaginatedBooks> {
-  const query = new URLSearchParams();
-  if (params.limit !== undefined) query.set('limit', String(params.limit));
-  if (params.offset !== undefined) query.set('offset', String(params.offset));
-
-  const suffix = query.size > 0 ? `?${query}` : '';
-  return apiFetch<PaginatedBooks>(`/api/books${suffix}`);
+  return apiFetch<PaginatedBooks>(`/api/books${paginationQuery(params)}`);
 }
 
 /** `bookId` accepts either the UCI (`BF11`) or the slug (`fatawa-islamia-jild-2`). */
@@ -138,8 +142,60 @@ export function getBook(bookId: string): Promise<BookDetail> {
 }
 
 /**
- * NOTE for whoever adds the reader: the TOC endpoints (`/api/books/:id/toc` and
- * `/toc/flat`) return a bare JSON array, not the `{items, total, limit, offset}`
- * envelope the paginated collections use. A helper for them must not assume
- * `.items` exists.
+ * A book's pages, without their HTML — the listing carries only `pageNo` and
+ * `hasFootnotes`, which is why it is cheap enough to ask for a book's first
+ * page just to know where reading starts.
+ *
+ * `limit` is capped at 100 by the backend and the largest book has 2,029 pages,
+ * so this is genuinely paginated, unlike the catalogue.
  */
+export function listBookPages(
+  bookId: string,
+  params: { limit?: number; offset?: number } = {},
+): Promise<PaginatedPageSummaries> {
+  return apiFetch<PaginatedPageSummaries>(
+    `/api/books/${encodeURIComponent(bookId)}/pages${paginationQuery(params)}`,
+  );
+}
+
+/**
+ * One page, by book and *printed* page number — not an index. Books start
+ * anywhere from page 1 to 179 and may skip numbers, so this 404s for a page the
+ * book does not have rather than clamping to a neighbour.
+ */
+export function getPage(bookId: string, pageNo: number): Promise<PageDetail> {
+  return apiFetch<PageDetail>(
+    `/api/books/${encodeURIComponent(bookId)}/pages/${pageNo}`,
+  );
+}
+
+/** The same page, addressed by its UCI (`BP110026`). */
+export function getPageByUci(uci: string): Promise<PageDetail> {
+  return apiFetch<PageDetail>(`/api/pages/${encodeURIComponent(uci)}`);
+}
+
+/*
+ * The TOC endpoints return a BARE JSON ARRAY, not the `{items, total, limit,
+ * offset}` envelope the paginated collections use — the tree is deliberately
+ * unpaginated because it is titles only, at most 2,067 of them for one book.
+ * The return types below say so; nothing here may reach for `.items`.
+ */
+
+/** The two-level tree: chapters, each with its fatwa titles nested underneath. */
+export function getBookToc(bookId: string): Promise<TocChapter[]> {
+  return apiFetch<TocChapter[]>(
+    `/api/books/${encodeURIComponent(bookId)}/toc`,
+  );
+}
+
+/** The same entries in reading order with no nesting, for flat lists and counts. */
+export function getBookTocFlat(bookId: string): Promise<TocEntry[]> {
+  return apiFetch<TocEntry[]>(
+    `/api/books/${encodeURIComponent(bookId)}/toc/flat`,
+  );
+}
+
+/** One TOC entry, by UCI (`BT110001`), with its parent and children resolved. */
+export function getTocEntry(uci: string): Promise<TocEntryDetail> {
+  return apiFetch<TocEntryDetail>(`/api/toc/${encodeURIComponent(uci)}`);
+}
