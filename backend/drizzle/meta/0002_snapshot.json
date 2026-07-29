@@ -1,0 +1,319 @@
+{
+  "id": "a987517d-a54e-4d63-954a-c680a8bdeb6a",
+  "prevId": "10ee6041-0a64-49ef-b0db-a3c5f7c2ebe0",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.books": {
+      "name": "books",
+      "schema": "",
+      "columns": {
+        "uci": {
+          "name": "uci",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "number": {
+          "name": "number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "writer": {
+          "name": "writer",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "publisher": {
+          "name": "publisher",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "books_number_unique": {
+          "name": "books_number_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "number"
+          ]
+        },
+        "books_slug_unique": {
+          "name": "books_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "books_uci_check": {
+          "name": "books_uci_check",
+          "value": "\"books\".\"uci\" = 'BF' || \"books\".\"number\""
+        },
+        "books_number_check": {
+          "name": "books_number_check",
+          "value": "\"books\".\"number\" > 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.pages": {
+      "name": "pages",
+      "schema": "",
+      "columns": {
+        "uci": {
+          "name": "uci",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "book_uci": {
+          "name": "book_uci",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "page_no": {
+          "name": "page_no",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "html": {
+          "name": "html",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "footnotes": {
+          "name": "footnotes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "pages_book_uci_books_uci_fk": {
+          "name": "pages_book_uci_books_uci_fk",
+          "tableFrom": "pages",
+          "tableTo": "books",
+          "columnsFrom": [
+            "book_uci"
+          ],
+          "columnsTo": [
+            "uci"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "pages_book_page_unique": {
+          "name": "pages_book_page_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "book_uci",
+            "page_no"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "pages_uci_check": {
+          "name": "pages_uci_check",
+          "value": "\"pages\".\"uci\" = 'BP' || substring(\"pages\".\"book_uci\" from 3) || lpad(\"pages\".\"page_no\"::text, 4, '0')"
+        },
+        "pages_page_no_check": {
+          "name": "pages_page_no_check",
+          "value": "\"pages\".\"page_no\" BETWEEN 1 AND 9999"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.toc_entries": {
+      "name": "toc_entries",
+      "schema": "",
+      "columns": {
+        "uci": {
+          "name": "uci",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "book_uci": {
+          "name": "book_uci",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "number_in_book": {
+          "name": "number_in_book",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "level": {
+          "name": "level",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "parent_uci": {
+          "name": "parent_uci",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "title": {
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "page_uci": {
+          "name": "page_uci",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "toc_entries_page_uci_idx": {
+          "name": "toc_entries_page_uci_idx",
+          "columns": [
+            {
+              "expression": "page_uci",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "toc_entries_parent_uci_idx": {
+          "name": "toc_entries_parent_uci_idx",
+          "columns": [
+            {
+              "expression": "parent_uci",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "toc_entries_book_uci_books_uci_fk": {
+          "name": "toc_entries_book_uci_books_uci_fk",
+          "tableFrom": "toc_entries",
+          "tableTo": "books",
+          "columnsFrom": [
+            "book_uci"
+          ],
+          "columnsTo": [
+            "uci"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "toc_entries_parent_uci_toc_entries_uci_fk": {
+          "name": "toc_entries_parent_uci_toc_entries_uci_fk",
+          "tableFrom": "toc_entries",
+          "tableTo": "toc_entries",
+          "columnsFrom": [
+            "parent_uci"
+          ],
+          "columnsTo": [
+            "uci"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "toc_entries_page_uci_pages_uci_fk": {
+          "name": "toc_entries_page_uci_pages_uci_fk",
+          "tableFrom": "toc_entries",
+          "tableTo": "pages",
+          "columnsFrom": [
+            "page_uci"
+          ],
+          "columnsTo": [
+            "uci"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "toc_entries_book_number_unique": {
+          "name": "toc_entries_book_number_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "book_uci",
+            "number_in_book"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "toc_entries_uci_check": {
+          "name": "toc_entries_uci_check",
+          "value": "\"toc_entries\".\"uci\" = 'BT' || substring(\"toc_entries\".\"book_uci\" from 3) || lpad(\"toc_entries\".\"number_in_book\"::text, 4, '0')"
+        },
+        "toc_entries_number_in_book_check": {
+          "name": "toc_entries_number_in_book_check",
+          "value": "\"toc_entries\".\"number_in_book\" BETWEEN 1 AND 9999"
+        },
+        "toc_entries_level_check": {
+          "name": "toc_entries_level_check",
+          "value": "\"toc_entries\".\"level\" IN (1, 2)"
+        },
+        "toc_entries_parent_check": {
+          "name": "toc_entries_parent_check",
+          "value": "(\"toc_entries\".\"level\" = 1 AND \"toc_entries\".\"parent_uci\" IS NULL)\n       OR (\"toc_entries\".\"level\" = 2 AND \"toc_entries\".\"parent_uci\" IS NOT NULL)"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

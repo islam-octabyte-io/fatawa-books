@@ -1,38 +1,55 @@
-import { Body, Controller, Get, Inject, Post } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
-import { desc } from 'drizzle-orm';
+import {
+  Controller,
+  Get,
+  ServiceUnavailableException,
+} from '@nestjs/common';
+import {
+  ApiOperation,
+  ApiServiceUnavailableResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
 
-import { DRIZZLE } from '../db/drizzle.constants';
-import type { Database } from '../db/drizzle.module';
-import { pings } from '../db/schema';
-import { CreatePingDto, PingDto } from './ping.dto';
+import { HealthDto } from './health.dto';
+import { HealthService } from './health.service';
 
+/**
+ * Excluded from the `/api` global prefix in `main.ts`, so this stays at
+ * `/health` where orchestrators and uptime checks expect it.
+ */
 @ApiTags('health')
-@Controller('pings')
+@Controller('health')
 export class HealthController {
-  constructor(@Inject(DRIZZLE) private readonly db: Database) {}
+  constructor(private readonly health: HealthService) {}
 
   @Get()
-  @ZodResponse({ status: 200, description: 'List pings', type: [PingDto] })
-  async list() {
-    return this.db.select().from(pings).orderBy(desc(pings.id)).limit(20);
-  }
+  @ApiOperation({
+    summary: 'Liveness and dependency check',
+    description:
+      'Returns 200 when the process is up and Postgres answers, 503 otherwise. The body is the same shape either way.',
+  })
+  @ZodResponse({
+    status: 200,
+    description: 'Everything is reachable',
+    type: HealthDto,
+  })
+  // `.Output` rather than `HealthDto`: `@ZodResponse` above documents the
+  // output variant of the schema, which nestjs-zod names `Health_Output`.
+  // Passing the DTO itself here would register the input variant too and leave
+  // two near-identical `Health` components in the document.
+  @ApiServiceUnavailableResponse({
+    description: 'A dependency is unreachable',
+    type: HealthDto.Output,
+  })
+  async check() {
+    const result = await this.health.check();
 
-  @Post()
-  @ZodResponse({ status: 201, description: 'Create ping', type: PingDto })
-  async create(@Body() body: CreatePingDto) {
-    const [row] = await this.db
-      .insert(pings)
-      .values({ message: body.message })
-      .returning();
+    // The status code, not just the body, has to carry the failure — probes
+    // routinely look at nothing else.
+    if (result.status !== 'ok') {
+      throw new ServiceUnavailableException(result);
+    }
 
-    return row;
-  }
-
-  /** Exercises the relational query builder, which only works when `drizzle()` got `{ schema }`. */
-  @Get('relational')
-  async relational() {
-    return this.db.query.pings.findMany({ limit: 5 });
+    return result;
   }
 }

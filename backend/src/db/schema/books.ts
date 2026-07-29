@@ -64,7 +64,7 @@ export const books = pgTable(
     uci: text('uci').primaryKey(),
     /** Catalogue order, 1-based. Drives the UCI, so frozen on publish. */
     number: integer('number').notNull().unique(),
-    /** Human handle, e.g. `fataawa-islamia-jild-2`. Renameable; the UCI is not. */
+    /** Human handle, e.g. `fatawa-islamia-jild-2`. Renameable; the UCI is not. */
     slug: text('slug').notNull().unique(),
     /** Source metadata `Book Name`, e.g. `فتاویٰ اسلامیہ (جلد دوم)`. */
     title: text('title').notNull(),

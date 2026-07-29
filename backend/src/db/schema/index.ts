@@ -9,6 +9,5 @@
 
 export * from './books';
 export * from './pages';
-export * from './pings';
 export * from './relations';
 export * from './toc-entries';
