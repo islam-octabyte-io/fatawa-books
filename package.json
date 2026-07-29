@@ -8,8 +8,12 @@
   },
   "scripts": {
     "backend": "pnpm --filter backend",
-    "dev": "pnpm --filter backend start:dev",
+    "frontend": "pnpm --filter frontend",
+    "dev": "pnpm -r --parallel dev",
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:frontend": "pnpm --filter frontend dev",
     "build": "pnpm -r build",
-    "typecheck": "pnpm -r typecheck"
+    "typecheck": "pnpm -r typecheck",
+    "lint": "pnpm -r lint"
   }
 }

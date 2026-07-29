@@ -5,3 +5,9 @@ packages:
 onlyBuiltDependencies:
   - esbuild
   - '@scarf/scarf'
+  # pnpm 10 blocks postinstall scripts by default; these ship native binaries the
+  # frontend build genuinely needs (Tailwind's Rust oxide engine, Next's image
+  # pipeline, the ESLint import resolver).
+  - '@tailwindcss/oxide'
+  - sharp
+  - unrs-resolver

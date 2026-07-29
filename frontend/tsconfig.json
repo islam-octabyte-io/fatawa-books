@@ -1,0 +1,50 @@
+{
+  // Deliberately NOT extending ../tsconfig.base.json. That base is shaped for
+  // Nest on Node — `nodenext` resolution, decorator metadata, `lib: ["ES2023"]`
+  // with no DOM, emitted source maps, and a comment explaining why `incremental`
+  // is off for a nest-cli reason that does not apply to Next. Inheriting it would
+  // mean overriding 9 of its 14 options, which reads as noise rather than reuse.
+  // `strict` is kept on purpose so both workspaces hold the same type discipline.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    // Next compiles the app itself; tsc is only ever used here as a type checker.
+    "noEmit": true,
+    "allowJs": true,
+    "isolatedModules": true,
+    "incremental": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "noFallthroughCasesInSwitch": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
